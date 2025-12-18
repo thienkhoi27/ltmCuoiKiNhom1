@@ -38,6 +38,41 @@ TOPIC, OPTIONS, LIMIT_TIME = load_vote_config("vote.txt")
 
 votes = {}
 lock = threading.Lock()
+
+
+private void btnConnect_Click(object sender, EventArgs e)
+{
+    string host = txtServer.Text.Trim();
+    int port = int.Parse(txtPort.Text);
+    clientId = txtClientId.Text.Trim();
+
+    tcpClient = new TcpClient(host, port);
+
+    sslStream = new SslStream(
+        tcpClient.GetStream(),
+        false,
+        (sender2, cert, chain, errors) => true
+    );
+
+    sslStream.AuthenticateAsClient(host);
+
+    reader = new StreamReader(sslStream, Encoding.UTF8);
+    writer = new StreamWriter(sslStream, Encoding.UTF8) { AutoFlush = true };
+
+    SendLine($"HELLO|{clientId}");
+
+    string resp = ReadLine();
+    var parts = resp.Split('|');
+
+    lblTopic.Text = parts[1];
+    lstOptions.Items.Clear();
+    foreach (var opt in parts[2].Split(','))
+        lstOptions.Items.Add(opt);
+
+    remainSeconds = int.Parse(parts[3]);
+    voteTimer.Start();
+}
+
 def build_result_string():
     counts = {opt: 0 for opt in OPTIONS}
     for cid, idx in votes.items():
@@ -97,3 +132,4 @@ def handle_client(conn, addr):
                 send_line("ERR|UNKNOWN_CMD")
     finally:
         conn.close()
+
