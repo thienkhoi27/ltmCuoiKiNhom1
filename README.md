@@ -1,161 +1,241 @@
 <div align="center">
 
-  <img src="https://cdn-icons-png.flaticon.com/512/927/927295.png" alt="Voting Logo" width="120" height="120">
+<img src="https://cdn-icons-png.flaticon.com/512/927/927295.png" width="110" alt="Voting"/>
 
-  # 🗳️ Nhóm 1 - Hệ Thống Bỏ Phiếu An Toàn
-  **Secure Voting System over TLS/SSL**
+# NHÓM 1 – LẬP TRÌNH MẠNG
+## HỆ THỐNG BỎ PHIẾU AN TOÀN (Secure Voting System)
 
-  > Môn học: Lập trình mạng
-  > <br>Ứng dụng Client-Server cho phép bỏ phiếu điện tử bảo mật, đảm bảo tính toàn vẹn thông qua giao thức TLS/SSL.
-
-  [![Python](https://img.shields.io/badge/Server-Python_3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-  [![C#](https://img.shields.io/badge/Client-WinForms_.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-  [![Security](https://img.shields.io/badge/Security-TLS%2FSSL-success?style=for-the-badge&logo=letsencrypt&logoColor=white)]()
+Giao tiếp Client–Server qua **TLS/SSL**, dữ liệu đóng gói theo **Framing Protocol**:
+**[4 bytes length – Big Endian] + [JSON payload UTF-8]**
 
 </div>
 
 ---
 
-## 📖 Giới thiệu
+## 1) Giới thiệu
 
-Hệ thống được thiết kế để tổ chức các cuộc bỏ phiếu trực tuyến với tính bảo mật cao trong môi trường mạng không tin cậy. Server và Client giao tiếp qua kênh mã hóa **SSL/TLS**, đảm bảo dữ liệu không bị nghe lén (Sniffing). Hệ thống đảm bảo tính toàn vẹn thông qua việc kiểm soát định danh (Client ID/MSSV), đảm bảo mỗi người chỉ được bỏ phiếu một lần duy nhất.
+Đây là ứng dụng bỏ phiếu điện tử theo mô hình **Client–Server**.
+Mục tiêu chính:
 
----
-
-## ✨ Tính năng chính
-
-### 🖥️ Server (Python)
-* **Đa luồng (Multi-threading):** Xử lý nhiều client kết nối cùng lúc mà không bị chặn.
-* **Bảo mật (SSL/TLS):** Sử dụng thư viện `ssl` để mã hóa toàn bộ gói tin giao tiếp.
-* **Cấu hình linh hoạt:** Đọc chủ đề, thời gian và danh sách ứng cử viên từ file `vote.txt`.
-* **Kiểm soát phiếu bầu:** Ngăn chặn một Client ID bỏ phiếu 2 lần (dùng `threading.Lock` để đồng bộ dữ liệu an toàn).
-
-### 💻 Client (C# Windows Forms)
-* **Giao diện trực quan:** Hiển thị danh sách lựa chọn, trạng thái kết nối.
-* **Tương tác thời gian thực:** Đồng hồ đếm ngược giới hạn thời gian bỏ phiếu được đồng bộ từ Server.
-* **Bảo mật:** Kết nối qua `SslStream` (Hỗ trợ cấu hình bỏ qua lỗi Self-signed Certificate cho môi trường Lab).
-* **Xem kết quả:** Cho phép truy vấn và hiển thị kết quả tổng hợp từ Server.
+-   **Bảo mật:** Đường truyền được mã hóa bằng **TLS/SSL** (chống nghe lén, giảm nguy cơ sửa đổi dữ liệu).
+-   **Độ tin cậy:** Thiết kế **Framing Protocol** để xử lý bản chất "stream" của TCP (chống dính gói/cắt gói - TCP Sticking/Fragmentation).
+-   **Nghiệp vụ:** Đảm bảo mỗi MSSV/Client ID chỉ được vote 1 lần, có đếm ngược thời gian server-side.
+-   **Realtime:** Kết quả bỏ phiếu được cập nhật tức thời trên biểu đồ của tất cả Client.
+-   **Admin Dashboard:** Công cụ quản trị mạnh mẽ để giám sát log, xem danh sách kết nối, kick client và khởi tạo cuộc bầu cử mới (Broadcast).
 
 ---
 
-## 🛠️ Yêu cầu hệ thống
+## 2) Tính năng
 
-1.  **Server:**
-    * Python 3.8 trở lên.
-    * Thư viện chuẩn (không cần cài thêm): `socket`, `ssl`, `threading`.
-2.  **Client:**
-    * Visual Studio 2019/2022 hoặc .NET SDK.
-    * Windows OS (để chạy WinForms).
-3.  **Công cụ hỗ trợ:**
-    * OpenSSL (để tạo chứng chỉ SSL tự ký).
+### 2.1 Server (Python)
+-   **TLS/SSL:** Sử dụng `ssl.SSLContext` với `PROTOCOL_TLS_SERVER` và load cặp khóa `server.crt`, `server.key`.
+-   **Đa luồng:** Xử lý mỗi kết nối client trên một thread riêng biệt.
+-   **Custom Protocol:** Nhận/gửi dữ liệu theo định dạng Header (Length) + Payload (JSON).
+-   **Quản lý Session:** Lưu trữ trạng thái phiên bầu cử (`session_id`, `topic`, `options`, `limit_time`).
+-   **Broadcast System:**
+    -   Khi có vote mới -> Gửi `RESULT_UPDATE` cho tất cả.
+    -   Khi Admin tạo bầu cử -> Gửi `NEW_ELECTION` để reset toàn bộ hệ thống.
+
+### 2.2 Client Vote (C# WinForms)
+-   **Secure Connection:** Kết nối qua `SslStream` và thực hiện handshake `AuthenticateAsClient`.
+-   **Architecture:** Tách biệt logic mạng (`NetworkManager`) và giao diện (`Form`). UI chỉ lắng nghe sự kiện (`OnMessage`, `OnResult`).
+-   **Giao diện:**
+    -   Hiển thị Topic, Timer đồng bộ từ Server.
+    -   Biểu đồ cột (Column Chart) cập nhật realtime bằng thư viện **LiveCharts**.
+
+### 2.3 Admin Dashboard (C# WinForms)
+-   **Quyền quản trị:** Đăng nhập bằng `admin_key`.
+-   **Giám sát:**
+    -   Nhận Log hệ thống realtime.
+    -   Xem danh sách Client đang kết nối (IP, Port, ID).
+-   **Điều khiển:**
+    -   **Kick:** Ngắt kết nối một client cụ thể.
+    -   **New Election:** Tạo đề tài mới, set thời gian mới và gửi lệnh Broadcast để toàn bộ hệ thống chuyển sang phiên bầu cử mới ngay lập tức.
 
 ---
 
-## 🚀 Hướng dẫn Cài đặt & Chạy
+## 3) Kiến trúc & Luồng dữ liệu
 
-### Bước 1: Tạo chứng chỉ SSL (Quan trọng)
-Server cần file chứng chỉ (`.crt`) và khóa riêng (`.key`) để thiết lập kênh bảo mật.
+### 3.1 Mô hình
+-   Giao thức: `TCP` -> `TLS Layer` -> `Framing Layer` -> `JSON Messages`.
+-   Server phục vụ đồng thời 2 loại client: **Voter** (người dùng) và **Admin** (quản trị).
 
-Chạy lệnh sau trong terminal (tại thư mục chứa `server.py`):
+### 3.2 Luồng hoạt động (Workflow)
+1.  **Handshake:** Client kết nối TLS tới Server.
+2.  **Auth:** Client gửi `HELLO` (kèm ID).
+3.  **Sync:** Server trả `WELCOME` (kèm Topic, Options, Thời gian còn lại).
+4.  **Action:** Client gửi `VOTE`.
+5.  **Response:** Server trả `OK` (thành công) hoặc `ERR` (nếu đã vote).
+6.  **Update:** Server broadcast `RESULT_UPDATE` tới toàn bộ Client đang kết nối.
+7.  **Admin:** Có thể gửi lệnh `ADMIN_NEW_ELECTION` để reset toàn bộ quy trình về Bước 3 với dữ liệu mới.
+
+---
+
+## 4) Thiết kế giao thức (Protocol)
+
+### 4.1 Framing Protocol
+Để giải quyết vấn đề TCP Stream, mọi gói tin đều tuân thủ định dạng:
+
+```text
+[HEADER (4 bytes)] [PAYLOAD (N bytes)]
+```
+
+-   **Header:** Số nguyên 4-byte (Big Endian) biểu thị độ dài của Payload.
+-   **Payload:** Chuỗi JSON (UTF-8).
+
+### 4.2 Các loại Message (JSON Structure)
+
+Dưới đây là cấu trúc các gói tin JSON chính:
+
+#### A. Nhóm xác thực & Khởi tạo
+
+**Client gửi HELLO:**
+```json
+{ "type": "HELLO", "client_id": "MSSV001" }
+```
+
+**Server trả WELCOME:**
+```json
+{
+    "type": "WELCOME",
+    "session_id": "abc12345",
+    "topic": "Bầu lớp trưởng",
+    "options": ["Nguyễn Văn A", "Trần Thị B"],
+    "limit_time": 60,
+    "remaining": 58
+}
+```
+
+#### B. Nhóm Bỏ phiếu
+
+**Client gửi VOTE:**
+```json
+{ "type": "VOTE", "option_index": 1 }
+```
+
+**Server trả OK:**
+```json
+{ "type": "OK", "result": "VOTED", "option": "Trần Thị B" }
+```
+
+**Server trả ERR:**
+```json
+{ "type": "ERR", "code": "ALREADY_VOTED", "message": "Bạn đã bỏ phiếu rồi!" }
+```
+
+**Server Broadcast Kết quả (Realtime):**
+```json
+{
+    "type": "RESULT_UPDATE",
+    "counts": { "Nguyễn Văn A": 5, "Trần Thị B": 3 },
+    "remaining": 45
+}
+```
+
+#### C. Nhóm Admin
+
+**Admin gửi lệnh tạo bầu cử mới:**
+```json
+{
+    "type": "ADMIN_NEW_ELECTION",
+    "topic": "Bầu Bí thư",
+    "options": ["Ứng viên X", "Ứng viên Y"],
+    "limit_time": 120
+}
+```
+
+**Server Broadcast New Election (tới tất cả):**
+```json
+{
+    "type": "NEW_ELECTION",
+    "topic": "Bầu Bí thư",
+    "options": ["..."],
+    "limit_time": 120,
+    "remaining": 120
+}
+```
+
+---
+
+## 5) Cấu trúc thư mục
+
+```text
+Repo/
+├── Server/
+│   ├── server.py           # Main Entry: Socket loop + Threading
+│   ├── models.py           # Classes: VoteSession, ClientInfo
+│   ├── protocol.py         # Hàm đóng gói/giải gói (Framing)
+│   ├── handlers.py         # Logic xử lý tin nhắn JSON
+│   ├── vote.txt            # File cấu hình mặc định
+│   ├── server.crt          # SSL Certificate
+│   └── server.key          # SSL Private Key
+│
+└── Client/
+    ├── NetworkManager.cs   # Xử lý TLS, Framing, Events
+    ├── VoteChart.cs        # Điều khiển LiveCharts
+    ├── MainMenuForm.cs     # Màn hình chọn chế độ
+    ├── VoteForm.cs         # Giao diện bỏ phiếu
+    └── AdminForm.cs        # Giao diện quản trị
+```
+
+---
+
+## 6) Hướng dẫn Cài đặt & Chạy
+
+### 6.1 Yêu cầu hệ thống
+-   **Server:** Python 3.9 trở lên.
+-   **Client:** Windows OS, Visual Studio 2022, .NET Framework / .NET 6+.
+-   **Thư viện:** `LiveCharts` (Cài qua NuGet cho Client).
+
+### 6.2 Tạo chứng chỉ SSL (Quan trọng)
+Tại thư mục `Server/`, chạy lệnh OpenSSL để tạo Self-signed Certificate:
+
 ```bash
 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt
 ```
-*Lưu ý: Khi được hỏi thông tin, bạn có thể điền tùy ý hoặc nhấn Enter để bỏ qua.*
 
-### Bước 2: Cấu hình file `vote.txt`
-Tạo file `vote.txt` cùng thư mục với `server.py`. Cấu trúc file bắt buộc như sau (lưu mã hóa **UTF-8**):
+### 6.3 Cấu hình file `vote.txt`
+Tạo file `vote.txt` cùng thư mục `server.py` với nội dung mẫu (UTF-8):
 
 ```text
-Bầu chọn lớp trưởng lớp Lập trình mạng
-time: 60
+Bầu chọn Gương mặt đại diện
+time: 120
 Nguyễn Văn A
-Trần Thị B
-Lê Văn C
+Lê Thị B
+Trần Văn C
 ```
-* **Dòng 1:** Chủ đề bỏ phiếu.
-* **Dòng 2:** `time: <số giây>` (Thời gian giới hạn).
-* **Dòng 3 trở đi:** Các lựa chọn ứng cử viên.
 
-### Bước 3: Khởi chạy Server
-Mở terminal và chạy lệnh:
+### 6.4 Chạy Server
+Mở terminal tại thư mục Server và chạy:
+
 ```bash
 python server.py
 ```
-*Server sẽ bắt đầu lắng nghe tại `0.0.0.0:8443`.*
 
-### Bước 4: Khởi chạy Client
-1.  Mở Project Client bằng Visual Studio.
-2.  Build và nhấn **Start**.
-3.  Nhập thông tin kết nối:
-    * **Server IP:** `127.0.0.1` (nếu chạy cùng máy) hoặc IP LAN của máy server.
-    * **Port:** `8443`.
-    * **Client ID:** Nhập Mã sinh viên hoặc Tên định danh (VD: `MSSV001`).
-4.  Nhấn **Kết nối** và bắt đầu bỏ phiếu.
+*Server sẽ lắng nghe tại `0.0.0.0:8443`.*
+
+### 6.5 Chạy Client
+1.  Mở Solution bằng Visual Studio.
+2.  Chuột phải vào Project -> **Manage NuGet Packages** -> Cài đặt `LiveCharts` và `LiveCharts.WinForms`.
+3.  Nhấn **Start** để chạy.
+4.  Tại màn hình chính:
+    -   Chọn **Tham gia Vote**: Nhập IP, Port, MSSV -> Kết nối -> Bỏ phiếu.
+    -   Chọn **Admin**: Nhập IP, Port, Admin Key (mặc định: `admin`) -> Quản lý.
 
 ---
 
-## 📡 Giao thức Giao tiếp (Communication Protocol)
+## 7) Thành viên nhóm & Phân công
 
-Hệ thống sử dụng giao thức dạng văn bản (Text-based) tùy biến qua Socket Secure.
-
-| Hướng | Lệnh gửi đi | Mô tả |
+| STT | Thành viên | Vai trò |
 | :--- | :--- | :--- |
-| **Client -> Server** | `HELLO|<client_id>` | Gửi định danh để đăng nhập hệ thống. |
-| **Server -> Client** | `WELCOME|<topic>|<opts>|<time>` | Phản hồi chủ đề, các lựa chọn và thời gian giới hạn. |
-| **Client -> Server** | `VOTE|<index>` | Gửi lựa chọn (index bắt đầu từ 1). |
-| **Server -> Client** | `OK|VOTED|<name>` | Xác nhận bỏ phiếu thành công. |
-| **Server -> Client** | `ERR|ALREADY_VOTED` | Báo lỗi nếu ID này đã bỏ phiếu trước đó. |
-| **Client -> Server** | `RESULT?` | Yêu cầu xem kết quả hiện tại. |
-| **Server -> Client** | `RESULT|<k>:<v>;...` | Trả về chuỗi kết quả dạng key-value. |
+| **1** | **Nguyễn Thu Hương** | **Team Leader** – Server Core, TLS/SSL, Framing Protocol |
+| **2** | **Hoàng Thị Kiều Diễm** | **Documentation** – Viết tài liệu, Test Case, Hỗ trợ UI |
+| **3** | **Lê Thiện Khôi** | **Client Dev** – WinForms, Tích hợp LiveCharts, NetworkManager |
+| **4** | **Nguyễn Tuấn Kiệt** | **Protocol Design** – Thiết kế JSON Schema, Testing, Edge cases |
+| **5** | **Hoàng Thanh Hải** | **Security QA** – Kiểm thử bảo mật, Admin Dashboard testing |
 
 ---
-
-## 📂 Cấu trúc dự án
-
-```text
-SecureVotingSystem/
-├── Server/
-│   ├── server.py        # Mã nguồn Server (Python)
-│   ├── vote.txt         # File cấu hình nội dung bầu cử
-│   ├── server.crt       # Chứng chỉ SSL (Tự tạo)
-│   └── server.key       # Private Key SSL (Tự tạo)
-└── Client/
-    ├── Form1.cs         # Logic xử lý giao diện Client (C#)
-    ├── Form1.Designer.cs
-    ├── Program.cs
-    └── ...
-```
-
----
-
-## 📊 Luồng hoạt động (Sequence Diagram)
-<div align="center">
-  <img src="pictures/soDoLuong.png" alt="Dashboard Screenshot" width="100%">
-  <br>
-  <em>Sơ đồ tuần tự hoạt động</em>
-</div>
-
----
-
-## 👥 Nhóm phát triển
-
-Do đặc thù môn Lập trình mạng không tập trung vào Database, vai trò các thành viên được phân chia như sau:
-
-| STT | Thành viên | Vai trò | Github |
-| :--: | :--- | :--- | :--- |
-| 1 | **Nguyễn Thu Hương** | **Team Leader / Server Dev**<br>(Phát triển Server Python, xử lý Đa luồng & SSL) | [@thuhun166](https://github.com/thuhun166) |
-| 2 | **Lê Thiện Khôi** | **Frontend / Client Dev**<br>(Phát triển Client C#, xử lý Socket & Giao diện) | [@thienkhoi27](https://github.com/thienkhoi27) |
-| 3 | **Nguyễn Tuấn Kiệt** | **Tester / Protocol Design**<br>(Thiết kế giao thức mạng, Test các trường hợp biên) | [@kitcoding17032005](https://github.com/kitcoding17032005) |
-| 4 | **Hoàng Thanh Hải** | **Tester / Security QA**<br>(Kiểm thử bảo mật, Test kết nối SSL/TLS) | [@thanhhai1605](https://github.com/thanhhai1605) |
-| 5 | **Hoàng Thị Kiều Diễm** | **Documentation / Config**<br>(Viết tài liệu, Cấu hình kịch bản vote.txt) | [@KieuDiem279](https://github.com/KieuDiem279) |
-
----
-
-## ⚠️ Lưu ý
-
-* **Self-signed Certificate:** Do sử dụng chứng chỉ tự ký, Client C# đã được cấu hình để `return true` trong `ServerCertificateValidationCallback`. Trong môi trường thực tế, cần sử dụng chứng chỉ từ CA uy tín.
-* **Encoding:** File `vote.txt` **bắt buộc** lưu dưới dạng UTF-8 để hiển thị tiếng Việt chính xác.
 
 <div align="center">
-  <sub>Developed with ❤️ by Group 2 - Network Programming Class</sub>
+  <sub>Developed by Group 1 - Network Programming Class</sub>
 </div>
