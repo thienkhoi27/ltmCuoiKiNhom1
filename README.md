@@ -8,6 +8,10 @@
 Giao tiếp Client–Server qua **TLS/SSL**, dữ liệu đóng gói theo **Framing Protocol**:
 **[4 bytes length – Big Endian] + [JSON payload UTF-8]**
 
+  [![Python](https://img.shields.io/badge/Server-Python_3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+  [![C#](https://img.shields.io/badge/Client-WinForms_.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+  [![Security](https://img.shields.io/badge/Security-TLS%2FSSL-success?style=for-the-badge&logo=letsencrypt&logoColor=white)]()
+
 </div>
 
 ---
