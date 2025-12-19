@@ -5,7 +5,7 @@
   # 🗳️ Nhóm 1 - Hệ Thống Bỏ Phiếu An Toàn
   **Secure Voting System over TLS/SSL**
 
-  > **MM**Môn học: Lập trình mạn
+  > Môn học: Lập trình mạng
   > <br>Ứng dụng Client-Server cho phép bỏ phiếu điện tử bảo mật, đảm bảo tính toàn vẹn thông qua giao thức TLS/SSL.
 
   [![Python](https://img.shields.io/badge/Server-Python_3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
