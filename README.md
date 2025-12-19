@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="https://cdn-icons-png.flaticon.com/512/2633/2633606.png" alt="Voting Logo" width="120" height="120">
+  <img src="https://cdn-icons-png.flaticon.com/512/927/927295.png" alt="Voting Logo" width="120" height="120">
 
   # 🗳️ Nhóm 1 - Hệ Thống Bỏ Phiếu An Toàn
   **Secure Voting System over TLS/SSL**
@@ -129,7 +129,11 @@ SecureVotingSystem/
 ---
 
 ## 📊 Luồng hoạt động (Sequence Diagram)
-
+<div align="center">
+  <img src="pictures/soDoLuong.png" alt="Dashboard Screenshot" width="100%">
+  <br>
+  <em>Sơ đồ tuần tự hoạt động</em>
+</div>
 
 ---
 
