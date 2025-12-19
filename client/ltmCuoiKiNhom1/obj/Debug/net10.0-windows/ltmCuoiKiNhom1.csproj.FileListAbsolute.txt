@@ -1,0 +1,7 @@
+C:\Users\Administrator\source\repos\ltmCuoiKiNhom1\ltmCuoiKiNhom1\obj\Debug\net10.0-windows\ltmCuoiKiNhom1.csproj.AssemblyReference.cache
+C:\Users\Administrator\source\repos\ltmCuoiKiNhom1\ltmCuoiKiNhom1\obj\Debug\net10.0-windows\ltmCuoiKiNhom1.Form1.resources
+C:\Users\Administrator\source\repos\ltmCuoiKiNhom1\ltmCuoiKiNhom1\obj\Debug\net10.0-windows\ltmCuoiKiNhom1.csproj.GenerateResource.cache
+C:\Users\Administrator\source\repos\ltmCuoiKiNhom1\ltmCuoiKiNhom1\obj\Debug\net10.0-windows\ltmCuoiKiNhom1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Administrator\source\repos\ltmCuoiKiNhom1\ltmCuoiKiNhom1\obj\Debug\net10.0-windows\ltmCuoiKiNhom1.AssemblyInfoInputs.cache
+C:\Users\Administrator\source\repos\ltmCuoiKiNhom1\ltmCuoiKiNhom1\obj\Debug\net10.0-windows\ltmCuoiKiNhom1.AssemblyInfo.cs
+C:\Users\Administrator\source\repos\ltmCuoiKiNhom1\ltmCuoiKiNhom1\obj\Debug\net10.0-windows\ltmCuoiKiNhom1.csproj.CoreCompileInputs.cache
