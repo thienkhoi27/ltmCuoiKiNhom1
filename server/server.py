@@ -68,3 +68,102 @@ def main():
 
 if __name__ == "__main__":
     main()
+=======
+votes = {}
+lock = threading.Lock()
+
+
+private void btnConnect_Click(object sender, EventArgs e)
+{
+    string host = txtServer.Text.Trim();
+    int port = int.Parse(txtPort.Text);
+    clientId = txtClientId.Text.Trim();
+
+    tcpClient = new TcpClient(host, port);
+
+    sslStream = new SslStream(
+        tcpClient.GetStream(),
+        false,
+        (sender2, cert, chain, errors) => true
+    );
+
+    sslStream.AuthenticateAsClient(host);
+
+    reader = new StreamReader(sslStream, Encoding.UTF8);
+    writer = new StreamWriter(sslStream, Encoding.UTF8) { AutoFlush = true };
+
+    SendLine($"HELLO|{clientId}");
+
+    string resp = ReadLine();
+    var parts = resp.Split('|');
+
+    lblTopic.Text = parts[1];
+    lstOptions.Items.Clear();
+    foreach (var opt in parts[2].Split(','))
+        lstOptions.Items.Add(opt);
+
+    remainSeconds = int.Parse(parts[3]);
+    voteTimer.Start();
+}
+
+def build_result_string():
+    counts = {opt: 0 for opt in OPTIONS}
+    for cid, idx in votes.items():
+        if 1 <= idx <= len(OPTIONS):
+            counts[OPTIONS[idx - 1]] += 1
+    return ";".join(f"{opt}:{count}" for opt, count in counts.items())
+
+
+def handle_client(conn, addr):
+    print(f"[+] Client from {addr}")
+    client_id = None
+    f = conn.makefile("rwb")
+
+    def send_line(s: str):
+        f.write((s + "\n").encode("utf-8"))
+        f.flush()
+
+    try:
+        while True:
+            raw = f.readline()
+            if not raw:
+                break
+
+            msg = raw.decode("utf-8-sig").strip()
+
+            if msg.startswith("HELLO|"):
+                client_id = msg.split("|", 1)[1]
+                opts = ",".join(OPTIONS)
+                send_line(f"WELCOME|{TOPIC}|{opts}|{LIMIT_TIME}")
+
+            elif msg.startswith("VOTE|"):
+                if client_id is None:
+                    send_line("ERR|NOT_AUTH")
+                    continue
+
+                try:
+                    idx = int(msg.split("|")[1])
+                except:
+                    send_line("ERR|INVALID_OPTION")
+                    continue
+
+                if not (1 <= idx <= len(OPTIONS)):
+                    send_line("ERR|INVALID_OPTION")
+                    continue
+
+                with lock:
+                    if client_id in votes:
+                        send_line("ERR|ALREADY_VOTED")
+                    else:
+                        votes[client_id] = idx
+                        send_line(f"OK|VOTED|{OPTIONS[idx-1]}")
+
+            elif msg == "RESULT?":
+                with lock:
+                    send_line("RESULT|" + build_result_string())
+            else:
+                send_line("ERR|UNKNOWN_CMD")
+    finally:
+        conn.close()
+
+
