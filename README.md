@@ -147,7 +147,7 @@ Do đặc thù môn Lập trình mạng không tập trung vào Database, vai tr
 | 2 | **Lê Thiện Khôi** | **Frontend / Client Dev**<br>(Phát triển Client C#, xử lý Socket & Giao diện) | [@thienkhoi27](https://github.com/thienkhoi27) |
 | 3 | **Nguyễn Tuấn Kiệt** | **Tester / Protocol Design**<br>(Thiết kế giao thức mạng, Test các trường hợp biên) | [@kitcoding17032005](https://github.com/kitcoding17032005) |
 | 4 | **Hoàng Thanh Hải** | **Tester / Security QA**<br>(Kiểm thử bảo mật, Test kết nối SSL/TLS) | [@thanhhai1605](https://github.com/thanhhai1605) |
-| 5 | **Thị Kiều Diễm** | **Documentation / Config**<br>(Viết tài liệu, Cấu hình kịch bản vote.txt) | [@KieuDiem279](https://github.com/KieuDiem279) |
+| 5 | **Hoàng Thị Kiều Diễm** | **Documentation / Config**<br>(Viết tài liệu, Cấu hình kịch bản vote.txt) | [@KieuDiem279](https://github.com/KieuDiem279) |
 
 ---
 
